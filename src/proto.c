@@ -415,7 +415,7 @@ static bool login_scram_sha_256_cont(PgSocket *server, unsigned datalen, const u
 		goto failed;
 
 	client_final_message = build_client_final_message(&server->scram_state,
-							  user, server->pool->db, server_nonce,
+							  user, client_database(server), server_nonce,
 							  salt, saltlen, iterations);
 
 	free(salt);

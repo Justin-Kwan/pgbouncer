@@ -698,7 +698,7 @@ failed:
 /* decide on packets of client in login phase */
 static bool handle_client_startup(PgSocket *client, PktHdr *pkt)
 {
-	const char *provided_passwd = NULL;
+	const char *provided_passwd;
 	const uint8_t *key;
 	bool ok;
 	bool is_unix = pga_is_unix(&client->remote_addr);
