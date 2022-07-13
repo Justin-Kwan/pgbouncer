@@ -306,14 +306,14 @@ static bool login_clear_psw(PgSocket *server)
 {
 	PgUser *user = get_srv_psw(server);
 	slog_debug(server, "P: send clear password");
-	return send_password(server, user_password(user, server->pool->db));
+	return send_password(server, user_password(user, client_database(server)));
 }
 
 static bool login_md5_psw(PgSocket *server, const uint8_t *salt)
 {
 	char txt[MD5_PASSWD_LEN + 1], *src;
 	PgUser *user = get_srv_psw(server);
-	char *real_passwd = user_password(user, server->pool->db);
+	char *real_passwd = user_password(user, client_database(server));
 
 	slog_debug(server, "P: send md5 password");
 
@@ -339,7 +339,7 @@ static bool login_md5_psw(PgSocket *server, const uint8_t *salt)
 static bool login_scram_sha_256(PgSocket *server)
 {
 	PgUser *user = get_srv_psw(server);
-	const char *real_passwd = user_password(user, server->pool->db);
+	const char *real_passwd = user_password(user, client_database(server));
 	bool res;
 	char *client_first_message = NULL;
 

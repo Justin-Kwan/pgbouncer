@@ -369,7 +369,7 @@ static bool show_one_fd(PgSocket *admin, PgSocket *sk)
 
 	/* PAM requires passwords as well since they are not stored externally */
 	if (is_auth_user_present || is_pam_auth_used)
-		password = user_password(sk->login_user, sk->pool->db);
+		password = user_password(sk->login_user, client_database(sk));
 
 	if (sk->pool && sk->pool->user && sk->pool->user->has_scram_keys)
 		send_scram_keys = true;

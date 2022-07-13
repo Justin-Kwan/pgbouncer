@@ -38,7 +38,7 @@ static const char *hdr2hex(const struct MBuf *data, char *buf, unsigned buflen)
 static bool check_client_passwd(PgSocket *client, const char *provided_passwd)
 {
 	PgUser *user = client->login_user;
-	char *real_passwd = user_password(user, client->pool->db);
+	char *real_passwd = user_password(user, client_database(client));
 	int auth_type = client->client_auth_type;
 
 	if (user->mock_auth)
@@ -244,7 +244,7 @@ static bool finish_set_pool(PgSocket *client, bool takeover)
 
 	if (auth == AUTH_MD5)
 	{
-		real_passwd = user_password(client->login_user, client->pool->db);
+		real_passwd = user_password(client->login_user, client_database(client));
 		if (get_password_type(real_passwd) == PASSWORD_TYPE_SCRAM_SHA_256)
 			auth = AUTH_SCRAM_SHA_256;
 	}
@@ -455,7 +455,7 @@ bool handle_auth_query_response(PgSocket *client, PktHdr *pkt)
 		 * User password is database specific and only stored in
 		 * PgDatabase.
 		 */
-		database_add_user_password(client->pool->db, real_user, real_passwd);
+		database_add_user_password(client_database(client), real_user, real_passwd);
 		break;
 	case 'N':	/* NoticeResponse */
 		break;
@@ -596,7 +596,7 @@ static bool scram_client_first(PgSocket *client, uint32_t datalen, const uint8_t
 	char *input;
 	int res;
 	PgUser *user = client->login_user;
-	const char *real_passwd = user_password(user, client->pool->db);
+	const char *real_passwd = user_password(user, client_database(client));
 
 	ibuf = malloc(datalen + 1);
 	if (ibuf == NULL)
@@ -1073,4 +1073,12 @@ bool client_proto(SBuf *sbuf, SBufEvent evtype, struct MBuf *data)
 		break;
 	}
 	return res;
+}
+
+PgDatabase *client_database(PgSocket *client)
+{
+	// TODO: is there a way to get the name of the database in question and lookup as last resort?
+	if (client->pool && client->pool->db)
+		return client->pool->db;
+	return client->db;
 }
