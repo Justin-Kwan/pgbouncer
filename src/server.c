@@ -276,7 +276,7 @@ char *user_password(PgUser *user, PgDatabase *db)
 	PgUserPassword *user_passwd = NULL;
 	struct AANode *node;
 
-	if (db == NULL || user->from_auth_file)
+	if (db == NULL || user == db->forced_user || user->from_auth_file)
 		return user->passwd;
 
 	node = aatree_search(&db->user_passwds, (uintptr_t)user->name);
